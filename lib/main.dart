@@ -1,12 +1,16 @@
 import 'package:achieve/helper/helper.dart';
 import 'package:achieve/user/LocalUser.dart';
+import 'package:achieve/work_out.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'helper/database_service/database_ref.dart';
-import 'user/create_user.dart';
+import 'home.dart';
+import 'profile.dart';
+import 'user/log_in.dart';
+import 'work_plan.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,14 +49,10 @@ class _BackGroundState extends State<BackGround> {
 
   void _checkUserStatus() async {
     final _auth = References.firebaseAuth;
-    late LocalUser _user;
-
     _auth.userChanges().listen((event) {
       if (event == null) {
         _auth.signInAnonymously();
       } else {
-        _user = LocalUser(event.uid, null, null, null);
-        _user.saveUser();
         if (event.isAnonymous) {
           widget._isIOS
               ? showCupertinoDialog(
@@ -62,18 +62,23 @@ class _BackGroundState extends State<BackGround> {
                   context: context,
                   builder: (context) => _alertDialog(context));
         } else {
-          //load personal data;
           if (!event.emailVerified) {
             print('prompt to verify email');
+          }else{
+            print('update stuff');
           }
         }
       }
-      print(event.toString());
     });
+  }
+
+  void _logInUser() async {
+    LocalUser.signIn();
   }
 
   @override
   void initState() {
+    _logInUser();
     _checkUserStatus();
     super.initState();
   }
@@ -99,11 +104,11 @@ class _BackGroundState extends State<BackGround> {
         controller: _pController,
         pageSnapping: true,
         onPageChanged: _onPageChanged,
-        children: [
-          //Home(),
-          //my courses,
-          //OwnCoach,
-          //Settings,
+        children: const [
+          Home(),
+          Plan(),
+          WorkOut(),
+          Profile(),
           //Admin
         ],
       ),
@@ -122,8 +127,6 @@ List<BottomNavigationBarItem> _bottomMenu = [
   const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
   const BottomNavigationBarItem(
       icon: Icon(Icons.my_library_add_outlined), label: 'Courses'),
-  const BottomNavigationBarItem(
-      icon: Icon(Icons.star_border_outlined), label: 'Own coach'),
   BottomNavigationBarItem(
       icon: Image.asset('assets/logo/IconOnly_Transparent_NoBuffer_small.png',
           color: Colors.grey),
@@ -137,19 +140,19 @@ List<BottomNavigationBarItem> _bottomMenu = [
       icon: Icon(Icons.admin_panel_settings_outlined), label: 'Admin'),
 ];
 
-
-CupertinoAlertDialog _cupertinoAlertDialog(BuildContext context){
+CupertinoAlertDialog _cupertinoAlertDialog(BuildContext context) {
   return CupertinoAlertDialog(
     title: const Text('Create an account'),
     actions: [
       TextButton(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateUser()));
+          onPressed: () async {
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const LogIn(true)));
+            Navigator.pop(context);
           },
           child: const Text('Yes')),
       TextButton(
           onPressed: () {
-            print('Explain');
             Navigator.pop(context);
           },
           child: const Text('No')),
@@ -157,13 +160,15 @@ CupertinoAlertDialog _cupertinoAlertDialog(BuildContext context){
   );
 }
 
-AlertDialog _alertDialog(BuildContext context){
+AlertDialog _alertDialog(BuildContext context) {
   return AlertDialog(
     title: const Text('Create an account'),
     actions: [
       TextButton(
-          onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateUser()));
+          onPressed: () async {
+            await Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const LogIn(false)));
+            Navigator.pop(context);
           },
           child: const Text('Yes')),
       TextButton(
