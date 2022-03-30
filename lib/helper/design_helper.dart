@@ -11,13 +11,18 @@ class DesignHelper {
   static Text Header(String _title) {
     return Text(
       _title,
-      style: TextStyle(), //TODO set textStyle
+      style: const TextStyle(), //TODO set textStyle
     );
   }
 
-
   static TextStyle buttonStandard(){
-    return TextStyle( );
+    return const TextStyle( );
+  }
+
+  static TextStyle barelyVisible(){
+    return const TextStyle(
+      color: Colors.white30,
+    );
   }
 
   static Divider dividerStd(){

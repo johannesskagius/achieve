@@ -4,6 +4,8 @@ import 'package:achieve/helper/design_helper.dart';
 import 'package:achieve/user/LocalUser.dart';
 import 'package:flutter/material.dart';
 
+import 'settings.dart';
+
 class Profile extends StatefulWidget {
   Profile(this._img, {Key? key}) : super(key: key);
   File _img;
@@ -21,6 +23,7 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     final _height = MediaQuery.of(context).size.height-AppBar().preferredSize.height;
+    bool _isIOS = Theme.of(context).platform == TargetPlatform.iOS;
     return Scaffold(
       body: Column(
         children: [
@@ -29,7 +32,9 @@ class _ProfileState extends State<Profile> {
             child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => Settings(_isIOS)));
+                    },
                     icon: const Icon(Icons.settings_outlined))),
           ),
           Padding(
@@ -67,7 +72,13 @@ class _ProfileState extends State<Profile> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(margin: const EdgeInsets.all(8),child: const Text('Followers')),
                 Container(margin: const EdgeInsets.all(8),child: const Text('Training Stats')),
+                Container(margin: const EdgeInsets.all(8),child: const Text('Sessions this year')),
+                Container(margin: const EdgeInsets.all(8),child: const Text('Activities')),
+                Container(margin: const EdgeInsets.all(8),child: const Text('Posts')),
+                Container(margin: const EdgeInsets.all(8),child: const Text('Gear')),
+                Container(margin: const EdgeInsets.all(8),child: const Text('Classes')),
               ],
             ),
           ),
