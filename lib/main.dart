@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:achieve/helper/database_service/user_service.dart';
 import 'package:achieve/helper/helper.dart';
 import 'package:achieve/user/LocalUser.dart';
 import 'package:achieve/work_out.dart';
@@ -46,10 +49,11 @@ class _BackGroundState extends State<BackGround> {
   final _pController = PageController();
   bool isManager = false;
   int _selected = 0;
+  File _img = File('assets/images/human.jpeg');
 
   void _checkUserStatus() async {
     final _auth = References.firebaseAuth;
-    _auth.userChanges().listen((event) {
+    _auth.userChanges().listen((event) async {
       if (event == null) {
         _auth.signInAnonymously();
       } else {
@@ -64,9 +68,10 @@ class _BackGroundState extends State<BackGround> {
         } else {
           if (!event.emailVerified) {
             print('prompt to verify email');
-          }else{
+          } else {
             print('update stuff');
           }
+          _img = (await UserService.getProfileImage(event.uid))!;
         }
       }
     });
@@ -104,16 +109,16 @@ class _BackGroundState extends State<BackGround> {
         controller: _pController,
         pageSnapping: true,
         onPageChanged: _onPageChanged,
-        children: const [
-          Home(),
-          Plan(),
-          WorkOut(),
-          Profile(),
+        children: [
+          const Home(),
+          const Plan(),
+          const WorkOut(),
+          Profile(_img),
           //Admin
         ],
       ),
       bottomSheet: BottomNavigationBar(
-        items: _bottomMenu,
+        items: _bottomMenu(isManager),
         currentIndex: _selected,
         showSelectedLabels: true,
         selectedItemColor: Colors.greenAccent,
@@ -123,22 +128,29 @@ class _BackGroundState extends State<BackGround> {
   }
 }
 
-List<BottomNavigationBarItem> _bottomMenu = [
-  const BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
-  const BottomNavigationBarItem(
-      icon: Icon(Icons.my_library_add_outlined), label: 'Courses'),
-  BottomNavigationBarItem(
-      icon: Image.asset('assets/logo/IconOnly_Transparent_NoBuffer_small.png',
-          color: Colors.grey),
+List<BottomNavigationBarItem> _bottomMenu(bool _isManager) {
+  List<BottomNavigationBarItem> _list = [];
+  _list.add(const BottomNavigationBarItem(
+      icon: Icon(Icons.home_outlined), label: 'Home'));
+  _list.add(const BottomNavigationBarItem(
+      icon: Icon(Icons.my_library_add_outlined), label: 'Courses'));
+  _list.add(BottomNavigationBarItem(
+      icon: Image.asset('assets/logo/IconOnly_Transparent_NoBuffer_xxxs.png',
+          fit: BoxFit.scaleDown, color: Colors.grey),
       activeIcon: Image.asset(
-          'assets/logo/IconOnly_Transparent_NoBuffer_small.png',
+          'assets/logo/IconOnly_Transparent_NoBuffer_xxxs.png',
+          fit: BoxFit.scaleDown,
           color: Colors.grey),
-      label: 'Own coach'),
-  const BottomNavigationBarItem(
-      icon: Icon(Icons.settings_outlined), label: 'Settings'),
-  const BottomNavigationBarItem(
-      icon: Icon(Icons.admin_panel_settings_outlined), label: 'Admin'),
-];
+      label: 'Own coach'));
+  _list.add(const BottomNavigationBarItem(
+      icon: Icon(Icons.account_circle_outlined), label: 'Settings'));
+
+  if (_isManager) {
+    _list.add(const BottomNavigationBarItem(
+        icon: Icon(Icons.admin_panel_settings_outlined), label: 'Admin'));
+  }
+  return _list;
+}
 
 CupertinoAlertDialog _cupertinoAlertDialog(BuildContext context) {
   return CupertinoAlertDialog(

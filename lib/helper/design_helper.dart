@@ -44,6 +44,10 @@ class DesignHelper {
     );
   }
 
+  static double stdElevation(){
+    return 10;
+  }
+
   static AlertDialog alertDialog(BuildContext context){
     return AlertDialog(
       title: const Text('Create an account'),

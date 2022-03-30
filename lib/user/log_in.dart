@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:achieve/helper/database_service/user_service.dart';
 import 'package:achieve/helper/design_helper.dart';
 import 'package:achieve/user/LocalUser.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -120,53 +121,66 @@ class _LogInState extends State<LogIn> {
                         padding: const EdgeInsets.all(5.0),
                         child: _create
                             ? CupertinoButton(
+                                //Create user cupertino
                                 child: const Text('Create user'),
                                 onPressed: () async {
-                                    String _email =
-                                        _list.elementAt(0).value.text;
-                                    String _password =
-                                        _list.elementAt(1).value.text;
-                                    String _pName =
-                                        _list.elementAt(2).value.text;
-                                    try {
-                                      UserCredential _userCred =
-                                          await References.firebaseAuth
-                                              .createUserWithEmailAndPassword(
-                                                  email: _email,
-                                                  password: _password);
-
-                                      if (_userCred.user != null) {
-                                        final _user = _userCred.user;
-                                        _user!.updateDisplayName(_pName);
-                                        _user.sendEmailVerification();
-                                        References.firebaseAuth
-                                            .signInWithEmailAndPassword(
-                                                email: _email,
-                                                password: _password);
-                                        LocalUser _local = LocalUser(_user.uid,
-                                            _user.email, _password, _pName);
-                                        _local.saveUser();
-                                        Navigator.pop(context);
+                                  String _email = _list.elementAt(0).value.text;
+                                  String _password =
+                                      _list.elementAt(1).value.text;
+                                  String _pName = _list.elementAt(2).value.text;
+                                  try {
+                                    UserCredential _userCred = await References
+                                        .firebaseAuth
+                                        .createUserWithEmailAndPassword(
+                                            email: _email, password: _password);
+                                    if (_userCred.user != null) {
+                                      final _user = _userCred.user;
+                                      _user!.updateDisplayName(_pName);
+                                      //await _user.sendEmailVerification();
+                                      References.firebaseAuth
+                                          .signInWithEmailAndPassword(
+                                              email: _email,
+                                              password: _password);
+                                      LocalUser _local = LocalUser(_user.uid,
+                                          _user.email, _pName, _password);
+                                      if (_photo2 != null) {
+                                        UserService.uploadUserImageToServer(
+                                                _local, _photo2!)
+                                            .then((value) async =>
+                                                Helper.saveString(
+                                                    UserService.PROFILE_PIC,
+                                                    await value.ref
+                                                        .getDownloadURL()));
                                       }
-                                    } on FirebaseAuthException catch (e) {
-                                      print(e.message);
+                                      //_local.saveUser();
+                                      //Navigator.pop(context);
                                     }
+                                  } on FirebaseAuthException catch (e) {
+                                    print(e.message);
+                                  }
                                 })
                             : CupertinoButton(
-                                child: const Text('Log in'), onPressed: () async {
-                          String _email =
-                              _list.elementAt(0).value.text;
-                          String _password =
-                              _list.elementAt(1).value.text;
-                          try {
-                            UserCredential _user = await References.firebaseAuth.signInWithEmailAndPassword(email: _email, password: _password);
-                            LocalUser _local = LocalUser(_user.user!.uid, _email, _email, _password);
-                            _local.saveUser();
-                          }on FirebaseAuthException catch (e) {
-                            print(e.message);
-                          }
-                          Navigator.pop(context);
-                        }),
+                                child: const Text('Log in'),
+                                onPressed: () async {
+                                  String _email = _list.elementAt(0).value.text;
+                                  String _password =
+                                      _list.elementAt(1).value.text;
+                                  try {
+                                    UserCredential _user = await References
+                                        .firebaseAuth
+                                        .signInWithEmailAndPassword(
+                                            email: _email, password: _password);
+                                    LocalUser _local = LocalUser(
+                                        _user.user!.uid,
+                                        _email,
+                                        _email,
+                                        _password);
+                                    _local.saveUser();
+                                  } on FirebaseAuthException catch (e) {
+                                    print(e.message);
+                                  }
+                                  Navigator.pop(context);
+                                }),
                       ),
                       DesignHelper.dividerStd(),
                       Row(

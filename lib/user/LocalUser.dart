@@ -1,5 +1,5 @@
+
 import 'package:achieve/helper/database_service/database_ref.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 import '../helper/helper.dart';
 
@@ -12,8 +12,9 @@ class LocalUser {
   LocalUser(this.userID, this._email, this.pName, this._password);
 
   void saveUser() {
+    print(_email);
+    print(_password);
     Helper.saveString('USER_ID', userID);
-
     if (_email != null && _password != null) {
       Helper.saveString('PASSWORD', _password!);
       Helper.saveString('EMAIL', _email!);
@@ -24,9 +25,18 @@ class LocalUser {
     String? _password = await Helper.getString('PASSWORD');
     String? _email = await Helper.getString('EMAIL');
     if (_email != null && _password != null) {
+      print('emal: $_email');
+      print('p: $_password');
       await References.firebaseAuth
           .signInWithEmailAndPassword(email: _email, password: _password);
     }
+  }
+
+  static void signOut() async {
+    Helper.removeValue('PASSWORD');
+    Helper.removeValue('PASSWORD');
+    References.firebaseAuth.signOut();
+    References.firebaseAuth.signInAnonymously();
   }
 
   String getUserID() {

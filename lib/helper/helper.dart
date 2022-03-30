@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+
 
 class Helper {
   static String _getToday() {
@@ -15,7 +20,14 @@ class Helper {
 
   static void saveString(String _key, String _value) async {
     final _shared = await SharedPreferences.getInstance();
+    print('key: $_key');
+    print('val: $_value');
     _shared.setString(_key, _value);
+  }
+
+  static void removeValue(String _key) async {
+    final _shared = await SharedPreferences.getInstance();
+    _shared.remove(_key);
   }
 
   static Future<String?> getString(String _key) async {
