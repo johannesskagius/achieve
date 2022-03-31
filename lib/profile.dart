@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:achieve/helper/design_helper.dart';
+import 'package:achieve/helper/helper.dart';
 import 'package:achieve/user/LocalUser.dart';
 import 'package:flutter/material.dart';
 
@@ -15,8 +16,16 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  String _name = 'Profile Name';
+  void _getPName() async{
+    String? _pName = await Helper.getString('PNAME');
+    if(_pName != null){
+      _name = _pName;
+    }
+  }
   @override
   void initState() {
+    _getPName();
     super.initState();
   }
 
@@ -60,7 +69,7 @@ class _ProfileState extends State<Profile> {
                           ),
                         ),
                       ),
-                      const Expanded(child: FittedBox(child: Text('Profile Name', textAlign: TextAlign.center,))),
+                      Expanded(child: FittedBox(child: Text(_name, textAlign: TextAlign.center))),
                     ],
                   ),
                 ],

@@ -136,7 +136,7 @@ class _LogInState extends State<LogIn> {
                                     if (_userCred.user != null) {
                                       final _user = _userCred.user;
                                       _user!.updateDisplayName(_pName);
-                                      //await _user.sendEmailVerification();
+                                      await _user.sendEmailVerification();
                                       References.firebaseAuth
                                           .signInWithEmailAndPassword(
                                               email: _email,
@@ -152,8 +152,8 @@ class _LogInState extends State<LogIn> {
                                                     await value.ref
                                                         .getDownloadURL()));
                                       }
-                                      //_local.saveUser();
-                                      //Navigator.pop(context);
+                                      _local.saveUser();
+                                      Navigator.pop(context);
                                     }
                                   } on FirebaseAuthException catch (e) {
                                     print(e.message);

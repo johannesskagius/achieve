@@ -19,20 +19,20 @@ class Settings extends StatelessWidget {
             children: [
               Text('Account', style: DesignHelper.barelyVisible(),),
               const Divider(),
-              _getCard('Membership'),
-              _getCard('Applications'),
-              _getCard('Membership terms'),
-              _getCard('Notifications'),
+              _getCard('Membership'),         //todo Implement
+              _getCard('Applications'),       //todo Implement
+              _getCard('Membership terms'),   //todo Implement
+              _getCard('Notifications'),      //todo Implement
               const Divider(),
-              Text('Preferences', style: DesignHelper.barelyVisible(),),
-              _getCard('Pricacy'),
-              _getCard('Units'),
-              _getCard('Temperature'),
-              _getCard('Beacon'),
-              _getCard('DataPermissions'),
-              _getCard('DataPermissions'),
-              _getCard('Contacts'),
-              _getCard('Help'),
+              Text('Preferences', style: DesignHelper.barelyVisible()),
+              _getCard('Pricacy'),            //todo Implement
+              _getCard('Units'),              //todo Implement
+              _getCard('Temperature'),        //todo Implement
+              _getCard('Beacon'),             //todo Implement
+              _getCard('DataPermissions'),    //todo Implement
+              _getCard('DataPermissions'),    //todo Implement
+              _getCard('Contacts'),           //todo Implement
+              _getCard('Help'),               //todo Implement
               const Divider(),
               _ios ? CupertinoButton.filled(child: const Text('Sign out'), onPressed: (){
                 LocalUser.signOut();
@@ -55,7 +55,7 @@ Padding _getCard(String _title) {
         child: SizedBox(
           height: 40,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(_title),
               const Icon(Icons.navigate_next),

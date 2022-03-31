@@ -7,17 +7,18 @@ class LocalUser {
   final String userID;
   String? _email;
   String? pName, _password;
-  Map<String, List<String>> _associates = {};
+  Map<String, List<String>> _associates = {}; // key for coaches, one key for friends
 
   LocalUser(this.userID, this._email, this.pName, this._password);
 
   void saveUser() {
-    print(_email);
-    print(_password);
     Helper.saveString('USER_ID', userID);
     if (_email != null && _password != null) {
       Helper.saveString('PASSWORD', _password!);
       Helper.saveString('EMAIL', _email!);
+    }
+    if(pName != null){
+      Helper.saveString('PNAME', pName!);
     }
   }
 
@@ -25,8 +26,6 @@ class LocalUser {
     String? _password = await Helper.getString('PASSWORD');
     String? _email = await Helper.getString('EMAIL');
     if (_email != null && _password != null) {
-      print('emal: $_email');
-      print('p: $_password');
       await References.firebaseAuth
           .signInWithEmailAndPassword(email: _email, password: _password);
     }

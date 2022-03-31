@@ -135,10 +135,10 @@ List<BottomNavigationBarItem> _bottomMenu(bool _isManager) {
   _list.add(const BottomNavigationBarItem(
       icon: Icon(Icons.my_library_add_outlined), label: 'Courses'));
   _list.add(BottomNavigationBarItem(
-      icon: Image.asset('assets/logo/IconOnly_Transparent_NoBuffer_xxxs.png',
+      icon: Image.asset('assets/logo/IconOnly_Transparent_NoBuffer_20x16.png',
           fit: BoxFit.scaleDown, color: Colors.grey),
       activeIcon: Image.asset(
-          'assets/logo/IconOnly_Transparent_NoBuffer_xxxs.png',
+          'assets/logo/IconOnly_Transparent_NoBuffer_20x16.png',
           fit: BoxFit.scaleDown,
           color: Colors.grey),
       label: 'Own coach'));
