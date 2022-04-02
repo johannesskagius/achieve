@@ -67,7 +67,6 @@ class _BackGroundState extends State<BackGround> {
                   builder: (context) => _alertDialog(context));
         } else {
           if (!event.emailVerified) {
-            print('prompt to verify email');
           } else {
             print('update stuff');
           }
@@ -112,7 +111,7 @@ class _BackGroundState extends State<BackGround> {
         children: [
           const Home(),
           const Plan(),
-          const WorkOut(),
+          WorkOut(widget._isIOS),
           Profile(_img),
           //Admin
         ],
@@ -141,7 +140,7 @@ List<BottomNavigationBarItem> _bottomMenu(bool _isManager) {
           'assets/logo/IconOnly_Transparent_NoBuffer_20x16.png',
           fit: BoxFit.scaleDown,
           color: Colors.grey),
-      label: 'Own coach'));
+      label: 'Achieve'));
   _list.add(const BottomNavigationBarItem(
       icon: Icon(Icons.account_circle_outlined), label: 'Settings'));
 

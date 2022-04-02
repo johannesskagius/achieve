@@ -66,7 +66,7 @@ class _LogInState extends State<LogIn> {
                           return null;
                         },
                         controller: _list.elementAt(0),
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                         ),
                         keyboardType: TextInputType.emailAddress,
@@ -83,7 +83,7 @@ class _LogInState extends State<LogIn> {
                           return null;
                         },
                         controller: _list.elementAt(1),
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                         ),
                         keyboardType: TextInputType.visiblePassword,
@@ -106,7 +106,7 @@ class _LogInState extends State<LogIn> {
                               },
                               controller: _list.elementAt(2),
                               keyboardType: TextInputType.visiblePassword,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 color: Colors.white,
                               ),
                             )
@@ -148,7 +148,7 @@ class _LogInState extends State<LogIn> {
                                                 _local, _photo2!)
                                             .then((value) async =>
                                                 Helper.saveString(
-                                                    UserService.PROFILE_PIC,
+                                                    UserService.profilePic,
                                                     await value.ref
                                                         .getDownloadURL()));
                                       }
@@ -226,6 +226,19 @@ class _LogInState extends State<LogIn> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
+          _create
+              ? GestureDetector(
+              onTap: () async {
+                _photo = await Helper.showChoiceDialog(context);
+                setState(() {
+                  _photo2 = File(_photo!.path);
+                });
+              },
+              child: _photo2 != null
+                  ? Image.file(_photo2!)
+                  : Image.asset('assets/images/human.jpeg'))
+              : const SizedBox.shrink(),
+          DesignHelper.dividerStd(),
           TextFormField(
             controller: _list.elementAt(0),
             keyboardType: TextInputType.emailAddress,
@@ -252,13 +265,48 @@ class _LogInState extends State<LogIn> {
               return null;
             },
           ),
+          _create ? TextFormField(
+            controller: _list.elementAt(0),
+            keyboardType: TextInputType.emailAddress,
+            decoration: const InputDecoration(
+              hintText: 'email',
+            ),
+            validator: (value) {
+              if (value == null || value.length < 3) {
+                return 'value has to be longer than 3 characters';
+              }
+              return null;
+            },
+          ):const SizedBox.shrink(),
           DesignHelper.dividerStd(),
           Padding(
             padding: const EdgeInsets.all(5.0),
             child: _create
-                ? TextButton(child: const Text('Log in'), onPressed: () {})
+                ? TextButton(child: const Text('Log in'), onPressed: () async {
+              String _email = _list.elementAt(0).value.text;
+              String _password =
+                  _list.elementAt(1).value.text;
+              try {
+                UserCredential _user = await References
+                    .firebaseAuth
+                    .signInWithEmailAndPassword(
+                    email: _email, password: _password);
+                LocalUser _local = LocalUser(
+                    _user.user!.uid,
+                    _email,
+                    _email,
+                    _password);
+                _local.saveUser();
+              } on FirebaseAuthException catch (e) {
+                print(e.message);
+              }
+              Navigator.pop(context);
+
+            })
                 : TextButton(
-                    child: const Text('Create user'), onPressed: () {}),
+                    child: const Text('Create user'), onPressed: () async {
+              await _createUser();
+            }),
           ),
           DesignHelper.dividerStd(),
           Row(
@@ -290,6 +338,44 @@ class _LogInState extends State<LogIn> {
         ],
       ),
     );
+  }
+
+  Future<void> _createUser() async {
+    String _email = _list.elementAt(0).value.text;
+    String _password =
+        _list.elementAt(1).value.text;
+    String _pName = _list.elementAt(2).value.text;
+    try {
+      print('here');
+      UserCredential _userCred = await References
+          .firebaseAuth
+          .createUserWithEmailAndPassword(
+          email: _email, password: _password);
+      if (_userCred.user != null) {
+        final _user = _userCred.user;
+        _user!.updateDisplayName(_pName);
+        await _user.sendEmailVerification();
+        References.firebaseAuth
+            .signInWithEmailAndPassword(
+            email: _email,
+            password: _password);
+        LocalUser _local = LocalUser(_user.uid,
+            _user.email, _pName, _password);
+        if (_photo2 != null) {
+          UserService.uploadUserImageToServer(
+              _local, _photo2!)
+              .then((value) async =>
+              Helper.saveString(
+                  UserService.profilePic,
+                  await value.ref
+                      .getDownloadURL()));
+        }
+        _local.saveUser();
+        Navigator.pop(context);
+      }
+    } on FirebaseAuthException catch (e) {
+      print(e.message);
+    }
   }
 
   @override

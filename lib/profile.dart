@@ -81,6 +81,7 @@ class _ProfileState extends State<Profile> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(margin: const EdgeInsets.all(8),child: const Text('Create a workout plan')),
                 Container(margin: const EdgeInsets.all(8),child: const Text('Followers')),
                 Container(margin: const EdgeInsets.all(8),child: const Text('Training Stats')),
                 Container(margin: const EdgeInsets.all(8),child: const Text('Sessions this year')),

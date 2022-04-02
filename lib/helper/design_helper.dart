@@ -15,6 +15,12 @@ class DesignHelper {
     );
   }
 
+  static TextStyle iosAlertBuilder(){
+    return const TextStyle(
+      color: Colors.white
+    );
+  }
+
   static TextStyle buttonStandard(){
     return const TextStyle( );
   }
@@ -27,6 +33,10 @@ class DesignHelper {
 
   static Divider dividerStd(){
     return const Divider(height: 1);
+  }
+
+  static CupertinoButton _cupertinoBtn(String _text, function()){
+    return CupertinoButton(child: Text(_text), onPressed: function());
   }
 
 

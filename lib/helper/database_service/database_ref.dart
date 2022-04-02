@@ -10,5 +10,4 @@ class References {
   static final DatabaseReference exerciseRefUser = exerciseRef.child('userMade');
   static final DatabaseReference exerciseRefStandard =   exerciseRef.child('standard');
   static final DatabaseReference improvementTips =   exerciseRef.child('improvement');
-
 }
