@@ -13,9 +13,14 @@ import '../helper.dart';
 class UserService {
   static const String profilePic = 'PROFILE_PIC';
   static const String _userRes = 'res';
+  static const String _ownSessionRef = 'ownSession';
 
   static DatabaseReference exerciseRef (String uId, String name){
     return References.usersRef.child(uId).child(_userRes).child(name);
+  }
+
+  static DatabaseReference ownSessionRef (String uId){
+    return References.usersRef.child(uId).child(_ownSessionRef);
   }
 
   static Future<TaskSnapshot> uploadUserImageToServer(

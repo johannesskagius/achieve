@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "108607124111",
+    "firebase_url": "https://achieve-dab78-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "achieve-dab78",
+    "storage_bucket": "achieve-dab78.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:108607124111:android:d8706bb6002b800136f6fa",
+        "android_client_info": {
+          "package_name": "com.example.achieve"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "108607124111-cdr9g4ljegrj6j9h6ripnq7krjghk9ra.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBMXTsQx4eYC2KosPu5_79wmgeqVF2ZPgk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "108607124111-cdr9g4ljegrj6j9h6ripnq7krjghk9ra.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "108607124111-9bcons617er6hr6ddsu7jdhf525mi9d3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.achieve"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

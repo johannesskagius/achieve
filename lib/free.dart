@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'helper/helper.dart';
-import 'session/session_gym.dart';
 import 'session/session_ui/gym_session.dart';
 
 class Free extends StatefulWidget {

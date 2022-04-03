@@ -23,6 +23,7 @@ class GymRes extends StatefulWidget {
 class _GymResState extends State<GymRes> {
   final List<BarChartGroupData> _barData = [];
   List<FlSpot> _lineBarData = [];
+  List<FlSpot> _today = [];
   double _maxY = 0;
   Map<String, List<double>> _barRes = {};
   final Map<String, List<double>> _lineChart = {};
@@ -31,9 +32,11 @@ class _GymResState extends State<GymRes> {
   int _sets = 0;
 
   Future<void> _getData() async {
+    widget._exercise.exerciseStats();
     String _id = References.firebaseAuth.currentUser!.uid;
-    final _snapShot =
-        await UserService.exerciseRef(_id, widget._exercise.name).get();
+    final _snapShot = await UserService.exerciseRef(_id, widget._exercise.name)
+        .child('occasion')
+        .get();
     for (DataSnapshot _date in _snapShot.children) {
       for (DataSnapshot _exercise in _date.children) {
         String _reps = '';
@@ -53,15 +56,15 @@ class _GymResState extends State<GymRes> {
           }
         }
       }
+      if (_date.key.toString() == Helper.getTodayDateMonthYear()) {
+        _sets++;
+      }
       if (_barRes[_date.key.toString()] != null &&
           _barRes[_date.key.toString()]!.isNotEmpty) {
         _barData.add(_makeGroupData(
-            int.parse(_date.key.toString()),
-            _barRes[
-                _date.key.toString()])); //TODO so this happens in @BarDiagram
-        _lineBarData = _lineData(_lineChart);
+            int.parse(_date.key.toString()), _barRes[_date.key.toString()]));
       }
-      //print(_lineChart.toString());
+      _lineBarData = _lineData(_lineChart);
       setState(() {});
     }
   }
@@ -156,7 +159,7 @@ class _GymResState extends State<GymRes> {
   Widget build(BuildContext context) {
     final _height =
         MediaQuery.of(context).size.height - AppBar().preferredSize.height;
-    LineDiagram _line = LineDiagram(_lineBarData);
+    LineDiagram _line = LineDiagram(_lineBarData, _today);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -182,6 +185,7 @@ class _GymResState extends State<GymRes> {
                         child: Text('Add your first result'),
                       )),
           ),
+          widget._exercise.showStatsRow(),
           CupertinoButton(
               child: const Text('Add set'),
               onPressed: () async {
@@ -191,17 +195,21 @@ class _GymResState extends State<GymRes> {
                   return;
                 }
                 _addData(_addRes.elementAt(1), _addRes.elementAt(0));
-                widget._exercise.setExerciseResult(_sets.toString(), {
-                  'reps': _addRes.elementAt(0).toString(),
-                  'weight': _addRes.elementAt(1).toString()
-                });
+                Map<String, bool> _pb = widget._exercise.checkIfPB(
+                    _addRes.elementAt(1), _addRes.elementAt(0).toInt());
+
+                // widget._exercise.setExerciseResult(_sets.toString(), {
+                //   'reps': _addRes.elementAt(0).toString(),
+                //   'weight': _addRes.elementAt(1).toString()
+                // }); // add result to server
                 _res.putIfAbsent(
+                    // add result to send it back to gym_session
                     _sets,
                     () => {
                           'reps': _addRes.elementAt(0).toString(),
                           'weight': _addRes.elementAt(1).toString()
                         });
-                _sets++;
+                _sets++; // add no of sets,
                 //update to server
                 setState(() {});
               }),
@@ -210,7 +218,7 @@ class _GymResState extends State<GymRes> {
               onPressed: () {
                 //remove
                 _barData.removeLast();
-                _lineBarData.removeLast();
+                _today.removeLast();
                 //widget._exercise.removeSet(3);
                 setState(() {});
               }),
@@ -228,22 +236,15 @@ class _GymResState extends State<GymRes> {
                 _getData();
                 //widget._exercise.removeSet(3);
               }),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: const [
-              Text('t'),
-              Text('t'),
-              Text('t'),
-            ],
-          )
         ],
       ),
     );
   }
 
-  void _addData(double _res, double _reps) {
-    _barData.add(_makeGroupData(int.parse(Helper.getTodayDayMonth()), [_res]));
-    _lineBarData.add(FlSpot(_reps, _res));
+  void _addData(double _weight, double _reps) {
+    _barData
+        .add(_makeGroupData(int.parse(Helper.getTodayDayMonth()), [_weight]));
+    _today.add(FlSpot(_reps, _weight));
   }
 }
 
@@ -260,7 +261,6 @@ List<FlSpot> _lineData(Map<String, List<double>> _data) {
       }
       double _avg = (_count / nr);
       double _reps = double.parse(_repsString);
-
       _flSpots.add(FlSpot(_reps, _avg));
     }
   }
@@ -269,9 +269,6 @@ List<FlSpot> _lineData(Map<String, List<double>> _data) {
 
 BarChartGroupData _makeGroupData(int _date, List<double>? _resOnDate) {
   List<BarChartRodData> _rods = []; // BarChartRodData(toY: y, width: 15)
-  for (double s in _resOnDate!) {
-    _rods.add(BarChartRodData(toY: s, width: 10));
-  }
   return BarChartGroupData(x: _date, barsSpace: 8, barRods: _rods);
 }
 
@@ -342,9 +339,10 @@ class _BarDiagramState extends State<BarDiagram> {
 }
 
 class LineDiagram extends StatefulWidget {
-  const LineDiagram(this._lineBarData, {Key? key}) : super(key: key);
+  const LineDiagram(this._lineBarData, this._today, {Key? key})
+      : super(key: key);
   final List<FlSpot> _lineBarData;
-
+  final List<FlSpot> _today;
 
   @override
   _LineDiagramState createState() => _LineDiagramState();
@@ -352,7 +350,8 @@ class LineDiagram extends StatefulWidget {
 
 class _LineDiagramState extends State<LineDiagram> {
   final String _saved = 'LINE_CHART';
-  double _minY = double.maxFinite;
+  final List<LineChartBarData> _dataShow = [];
+  double _minY = 100000;
   double _maxY = 0;
   double _maxX = 0;
   double _minX = double.maxFinite;
@@ -376,37 +375,55 @@ class _LineDiagramState extends State<LineDiagram> {
     widget._lineBarData.sort((a, b) => a.x.compareTo(b.x));
   }
 
-  void findMinY() {
-    for (FlSpot fiSpot in widget._lineBarData) {
-      if (fiSpot.y < _minY) {
-        _minY = fiSpot.y;
-      }
-      if (fiSpot.y > _maxY) {
-        _maxY = fiSpot.y;
-      }
-      if (fiSpot.x < _minX) {
-        _minX = fiSpot.x;
-      }
-      if (fiSpot.x > _maxX) {
-        _maxX = fiSpot.x;
-      }
+  void _setVisibleArea() {
+    try {
+      for (LineChartBarData _line in _dataShow) {
+            if (_line.mostBottomSpot.y < _minY) {
+              _minY = _line.mostBottomSpot.y;
+            }
+            if (_line.mostTopSpot.y > _maxY) {
+              _maxY = _line.mostTopSpot.y;
+            }
+            if (_line.mostLeftSpot.x < _minX) {
+              _minX = _line.mostLeftSpot.x;
+            }
+            if (_line.mostRightSpot.x > _maxX) {
+              _maxX = _line.mostRightSpot.x;
+            }
+          }
+    } catch (e) {
+        _minX = 1;
+        _maxX = 10;
+        _minY = 0;
+        _maxY = 50;
     }
   }
 
-  void _checkIfSameX() {}
-
   @override
   void didUpdateWidget(covariant LineDiagram oldWidget) {
-    _checkIfSameX();
     _sortFlSpots();
-    findMinY();
+    if (widget._today.isNotEmpty) {
+      _dataShow.add(LineChartBarData(
+        spots: widget._today,
+        isCurved: true,
+        barWidth: 3,
+        color: Colors.green,
+      ));
+    }
+    _setVisibleArea();
     super.didUpdateWidget(oldWidget);
   }
 
   @override
   void initState() {
     _sortFlSpots();
-    findMinY();
+    _dataShow.add(LineChartBarData(
+      spots: widget._lineBarData,
+      isCurved: true,
+      barWidth: 3,
+      color: Colors.red.withOpacity(0.5),
+    ));
+    _setVisibleArea();
     super.initState();
   }
 
@@ -421,18 +438,11 @@ class _LineDiagramState extends State<LineDiagram> {
       margin: const EdgeInsets.all(8),
       child: LineChart(
         LineChartData(
-          maxY: _maxY * 1.1,
-          minY: _minY * 0.8,
-          maxX: _maxX * 1.1,
+          maxY: (_maxY * 1.1).roundToDouble(),
+          minY: (_minY * 0.8).roundToDouble(),
+          maxX: (_maxX * 1.1).roundToDouble(),
           minX: _minX < 4 ? 1 : (_minX * 0.8).roundToDouble(),
-          lineBarsData: [
-            LineChartBarData(
-              spots: widget._lineBarData,
-              isCurved: true,
-              barWidth: 3,
-              color: Colors.red,
-            )
-          ],
+          lineBarsData: _dataShow,
           titlesData: _barTitles(),
         ),
         swapAnimationDuration: const Duration(milliseconds: 150),

@@ -29,6 +29,15 @@ class Helper {
   static bool isIos(BuildContext context){
     return Theme.of(context).platform == TargetPlatform.iOS;
   }
+
+  /// Hours and minutes
+  /// compared to current dime
+  static int getTimeDifferenceInMinutes(DateTime x){
+    final _now = DateTime.now();
+    Duration _duration = _now.difference(x);
+    return _duration.inMinutes;
+  }
+
   static String getTimeHourMinFromDateTime(DateTime _time){
     final _date = _time;
     String _hour ='';
@@ -52,7 +61,7 @@ class Helper {
     if (now.month < 10) {
       month = '0' + now.month.toString();
     }
-    return now.day.toString() + now.month.toString();
+    return now.day.toString() + month;
   }
 
   static String getTodayDateMonthYear() {

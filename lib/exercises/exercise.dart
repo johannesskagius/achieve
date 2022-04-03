@@ -9,6 +9,7 @@ abstract class Exercise{
   Future<Map<int, Map<String, String>>?> addExerciseResult(BuildContext context);
   void getExerciseResult();
   void setExerciseResult(String setNo, Map<String, String> _result);
+  Future<void> exerciseStats();
 
   @override
   String toString() {

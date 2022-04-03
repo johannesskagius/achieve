@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:achieve/exercises/exercise.dart';
+import 'package:achieve/helper/database_service/database_ref.dart';
+import 'package:achieve/helper/database_service/user_service.dart';
 import 'package:achieve/helper/design_helper.dart';
 import 'package:achieve/session/session_exercise.dart';
+import 'package:achieve/session/session_gym.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -18,8 +21,7 @@ class GymSessionUI extends StatefulWidget {
 }
 
 class _GymSessionUIState extends State<GymSessionUI> {
-  String _startTime = '';
-  Map<SessionExercise, List<String>> _exercises =
+  Map<SessionExercise, List<double>> _exercises =
       {}; // key exercise in session, value is the results
 
   @override
@@ -65,16 +67,16 @@ class _GymSessionUIState extends State<GymSessionUI> {
                           Map<int, Map<String, String>>? _res =
                               await _ex.addExerciseResult(context);
                           if (_res != null) {
-                            List<String> _reps = [];
-                            List<String> _resWeights = [];
+                            List<double> _reps = [];
+                            List<double> _resWeights = [];
                             for (Map<String, String> _setNo in _res.values) {
                               String? _repsNo = _setNo['reps'];
                               String? _weight = _setNo['weight'];
                               if (_repsNo != null) {
-                                _reps.add(_repsNo);
+                                _reps.add(double.parse(_repsNo));
                               }
                               if (_weight != null) {
-                                _resWeights.add(_weight);
+                                _resWeights.add(double.parse(_weight));
                               }
                             }
                             final _sessionEx = SessionExercise(
@@ -97,30 +99,19 @@ class _GymSessionUIState extends State<GymSessionUI> {
                       itemCount: _exercises.keys.length,
                       itemBuilder: (BuildContext context, int index) {
                         final _ex = _exercises.keys.elementAt(index);
-                        return index == 0
-                            ? Container(
-                                margin: const EdgeInsets.all(8),
-                                child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('No:',
-                                          style: DesignHelper.barelyVisible()),
-                                      Text('exercise name:',
-                                          style: DesignHelper.barelyVisible()),
-                                      Text('Reps:',
-                                          style: DesignHelper.barelyVisible())
-                                    ]),
-                              )
-                            : GestureDetector(
-                                child: Card(
-                                  child: ListTile(
-                                    leading: Text((_ex.posInSess).toString()),
-                                    title: Text(_ex.exercise.name),
-                                    trailing: Text(_ex.reps.first),
-                                  ),
-                                ),
-                              );
+                        return GestureDetector(
+                          child: Card(
+                            child: ListTile(
+                              leading: Text((_ex.posInSess).toString()),
+                              title: Text(_ex.exercise.name),
+                              trailing: Text(
+                                  _exercises[_ex]!.first.toInt().toString() +
+                                      ' - ' +
+                                      _exercises[_ex]!.last.toInt().toString() +
+                                      'kg'),
+                            ),
+                          ),
+                        );
                       },
                     ))
                   : const Center(
@@ -130,7 +121,53 @@ class _GymSessionUIState extends State<GymSessionUI> {
                   ? CupertinoButton(
                       child: Text('Completed',
                           style: DesignHelper.buttonStandard()),
-                      onPressed: () {})
+                      onPressed: () async {
+                        final _controller = TextEditingController();
+                        String _title ='Well done!';
+                        return _isIOS ? showCupertinoDialog(context: context, builder: (context)=> CupertinoAlertDialog(
+                          title: Text(_title),
+                          content: CupertinoTextField(
+                            keyboardType: TextInputType.name,
+                            controller: _controller,
+                            style: DesignHelper.iosAlertBuilder(),
+                            prefix:
+                            Text('Reps', style: DesignHelper.barelyVisible()),
+                          ),
+                          actions: [
+                            CupertinoButton(
+                                child: const Text('I´m not done'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                }),
+                            CupertinoButton(
+                                child: const Text('I´m done'),
+                                onPressed: () {
+                                  _addSession(_controller);
+                                  //Navigator.pop(context);
+                                })
+                          ],
+                        )) : showDialog(context: context, builder: (context) => AlertDialog(
+                          title: Text(_title),
+                          content: TextFormField(
+                            keyboardType: TextInputType.name,
+                            controller: _controller,
+                            style: DesignHelper.iosAlertBuilder(),
+                          ),
+                          actions: [
+                            TextButton(
+                                child: const Text('I´m not done'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                }),
+                            TextButton(
+                                child: const Text('I´m done'),
+                                onPressed: () {
+                                  _addSession(_controller);
+                                  Navigator.pop(context);
+                                })
+                          ],
+                        ));
+                      })
                   : TextButton(
                       onPressed: () {},
                       child: Text('Completed',
@@ -140,6 +177,22 @@ class _GymSessionUIState extends State<GymSessionUI> {
         ),
       ),
     );
+  }
+
+  void _addSession(TextEditingController _controller) {
+   String _name = _controller.value.text;
+    if(_name.isNotEmpty){
+      //create and save session
+      int _min  = Helper.getTimeDifferenceInMinutes(widget._startTime);
+      String _id = References.firebaseAuth.currentUser!.uid;
+      final _ref = UserService.ownSessionRef(_id);
+      _id += ','+_name;
+      print(_exercises.keys.elementAt(0).toString());
+       List<SessionExercise> _list = [];
+       _list.addAll(_exercises.keys.toList());
+       final _session = GymSession(_id, null,_name, _min, _list);
+       _ref.child(_name).set(_session.toJson());
+    }
   }
 }
 
@@ -156,7 +209,7 @@ class _ElapsedTimeState extends State<ElapsedTime> {
   int _min = 0;
   int _hours = 0;
   Timer? _timer;
-  String _time = '';
+  String _time = 'START !';
 
   void _getTrainingTime() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {

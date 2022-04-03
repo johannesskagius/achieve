@@ -1,10 +1,12 @@
 
 
+import 'package:achieve/session/session_exercise.dart';
+
 abstract class Session {
-  late String id;
-  late String name, desc;
+  late String id,name;
+  late String? desc;
   late int time;
-  abstract Map<String, List<String>> _exerciseInfo;
+  abstract Map<String, List<SessionExercise>> _exerciseInfo;
 
   Map<String, dynamic> toJson();
   void updateSession();

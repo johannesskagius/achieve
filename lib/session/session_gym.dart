@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:achieve/session/session.dart';
 
 import 'session_exercise.dart';
@@ -6,14 +8,14 @@ class GymSession extends Session {
   @override
   String id;
   @override
-  String desc;
+  String? desc;
   @override
   String name;
   @override
   int time;
   List<SessionExercise> _exerciseInfo;
 
-  GymSession(this.id, this.desc, this.name, this.time, this._exerciseInfo);
+  GymSession(this.id, this.desc, this.name, this.time, this._exerciseInfo); //
 
   @override
   Map<String, dynamic> toJson() => {
@@ -21,8 +23,16 @@ class GymSession extends Session {
         'desc': desc,
         'name': name,
         'time': time,
-        'exercises': _exerciseInfo,
+        'exercises': _getList(),
       };
+
+  List<Map<String, dynamic>> _getList(){
+    List<Map<String, dynamic>> _jsonOfObject = [];
+    for(SessionExercise _ex in _exerciseInfo){
+      _jsonOfObject.add(_ex.toJson());
+    }
+    return _jsonOfObject;
+  }
 
   factory GymSession.fromJson(dynamic json) => _fromJson(json);
 
